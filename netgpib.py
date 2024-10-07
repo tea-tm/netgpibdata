@@ -8,12 +8,12 @@ import struct
 import termstatus
 
 class netGPIB:
-    def __init__(self, ip, gpibAddr, eot='\004', debug=0, auto=False, log=False, tSleep=0):
+    def __init__(self, ip, gpibAddr, eot=r'\n', debug=0, auto=False, log=False, tSleep=0):
 
         #End of Transmission character
         self.eot = eot
         # EOT character number in the ASCII table
-        self.eotNum = struct.unpack('B',eot)[0]
+        self.eotNum = b'10'
 
         #Debug flag
         self.debug = debug
@@ -37,44 +37,42 @@ class netGPIB:
 
         #Initialize the GPIB-Ethernet converter
         self.netSock.setblocking(0)
-        self.netSock.send("++addr "+str(self.gpibAddr)+"\n")
+        self.netSock.send(bytes("++addr "+str(self.gpibAddr)+"\n", encoding='utf8'))
         time.sleep(0.1)
-        self.netSock.send("++eos 3\n")
+        self.netSock.send(bytes("++eos 3\n", encoding='utf8'))
         time.sleep(0.1)
-        self.netSock.send("++mode 1\n")
+        self.netSock.send(bytes("++mode 1\n", encoding='utf8'))
         time.sleep(0.1)
         if self.auto:
-            self.netSock.send("++auto 1\n")
-        else:
-            self.netSock.send("++auto 0\n")
+            self.netSock.send(bytes("++auto 1\n", encoding='utf8'))
+            self.netSock.send(bytes("++auto 0\n", encoding='utf8'))
         time.sleep(0.1)
-        self.netSock.send("++ifc\n")
+        self.netSock.send(bytes("++ifc\n", encoding='utf8'))
         time.sleep(0.1)
-        self.netSock.send("++read_tmo_ms 3000\n")
+        self.netSock.send(bytes("++read_tmo_ms 3000\n", encoding='utf8'))
         time.sleep(0.1)
-        self.netSock.send("++eot_char "+str(self.eotNum)+"\n")
-        self.netSock.send("++eot_enable 1\n")
-        self.netSock.send("++addr "+str(self.gpibAddr)+"\n")
+        self.netSock.send(bytes("++eot_char "+str(self.eotNum)+"\n", encoding='utf8'))
+        self.netSock.send(bytes("++eot_enable 1\n", encoding='utf8'))
         
     def refresh(self):
-        self.netSock.send("++addr "+str(self.gpibAddr)+"\n")
+        self.netSock.send(bytes("++addr "+str(self.gpibAddr)+"\n", encoding='utf8'))
         time.sleep(0.1)
-        self.netSock.send("++eos 3\n")
+        self.netSock.send(bytes("++eos 3\n", encoding='utf8'))
         time.sleep(0.1)
-        self.netSock.send("++mode 1\n")
+        self.netSock.send(bytes("++mode 1\n", encoding='utf8'))
         time.sleep(0.1)
         if self.auto:
-            self.netSock.send("++auto 1\n")
+            self.netSock.send(bytes("++auto 1\n", encoding='utf8'))
         else:
-            self.netSock.send("++auto 0\n")
+            self.netSock.send(bytes("++auto 0\n", encoding='utf8'))
         time.sleep(0.1)
-        self.netSock.send("++ifc\n")
+        self.netSock.send(bytes("++ifc\n", encoding='utf8'))
         time.sleep(0.1)
-        self.netSock.send("++read_tmo_ms 3000\n")
+        self.netSock.send(bytes("++read_tmo_ms 3000\n", encoding='utf8'))
         time.sleep(0.1)
-        self.netSock.send("++eot_char"+str(self.eotNum)+"\n")
-        self.netSock.send("++eot_enable 1\n")
-        self.netSock.send("++addr "+str(self.gpibAddr)+"\n")
+        self.netSock.send(bytes("++eot_char"+str(self.eotNum)+"\n", encoding='utf8'))
+        self.netSock.send(bytes("++eot_enable 1\n", encoding='utf8'))
+        self.netSock.send(bytes("++addr "+str(self.gpibAddr)+"\n", encoding='utf8'))
 
 
     def getData(self, buf, sleep=None):
@@ -113,20 +111,21 @@ class netGPIB:
             sleep=self.tSleep
         if self.log:
             # TODO: make this print command python3 friendly
-            print >>sys.stderr, "?? %s" % string
-        self.netSock.send(string+"\n")
+            print("?? {}".format(string))
+            
+        self.netSock.send(bytes(string+"\n", encoding='utf8'))
         if not self.auto:
             time.sleep(sleep)
-            self.netSock.send("++read eoi\n") #Change to listening mode
+            self.netSock.send(bytes("++read eoi\n", encoding='utf8')) #Change to listening mode
         ret = self.getData(buf)
         if self.log:
             # TODO: make this print command python3 friendly
-            print >>sys.stderr, "== %s" % ret.strip()
+            print("== {}".format(ret.strip()))
         return ret
 
     def srq(self):
         """Poll the device's SRQ"""
-        self.netSock.send("++srq\n")
+        self.netSock.send(bytes("++srq\n", encoding='utf8'))
         while 1:  # Read some data
             readSock, writeSock, errSock = select.select([self.netSock],[],[],3)
             if len(readSock) == 1:
@@ -141,13 +140,13 @@ class netGPIB:
             sleep=self.tSleep
         if self.log:
             # TODO: make this print command python3 friendly
-            print >>sys.stderr, ">> %s" % string
-        self.netSock.send(string+"\n")
+            print(">> {}".format(string))
+        self.netSock.send(bytes(string+"\n", encoding='utf8'))
         time.sleep(sleep)
 
     def spoll(self):
         """Perform a serial polling and return the result."""
-        self.netSock.send("++spoll\n")
+        self.netSock.send(bytes("++spoll\n", encoding='utf8'))
         while 1:  # Read some data
             readSock, writeSock, errSock = select.select([self.netSock],[],[],3)
             if len(readSock) == 1:

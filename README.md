@@ -1,7 +1,7 @@
 netgpibdata
 ===========
 
-GPIB programs for 40m lab use
+Updated GPIB programs for lab use, based on old code from 40m lab
 
 SRmeasure, AGmeasure, HPmeasure
 ---------
